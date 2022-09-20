@@ -50,6 +50,6 @@ Go to the very bottom of the open file and paste the following:
 ```
 */5 * * * * /example/path/script.sh
 ```
-(At ```/example/path/script.sh``` you have to enter the **entire** path! You can find out the whole path for example with the command ```pwd```)
+(At ```/example/path/script.sh``` you have to enter the **_entire_** path! You can find out the whole path for example with the command ```pwd```)
 
-After the correct command is in the crontab, the file can be saved and exited with ```control+O``` & ```Enter``` and control+ (Mac). (Under Windows: ```CTRL+O``` & Enter and ```CTRL+X```)
+After the correct command is in the crontab, the file can be saved and exited with ```control+O``` & ```Enter``` and ```control+X``` (Mac). (Under Windows: ```CTRL+O``` & Enter and ```CTRL+X```)
