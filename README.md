@@ -13,6 +13,11 @@ Install git tool
 sudo apt install git
 ```
 
+If you also want to use Discord Notifications, this tool must also be installed (otherwise this tool is not needed):
+```
+sudo apt install jq
+```
+
 ## Run
 Change to folder
 ```
