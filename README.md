@@ -32,6 +32,10 @@ or
 ```
 bash network_status.sh
 ```
+or
+```
+bash statuspage_discord_extended.sh
+```
 
 ## Automation
 This can also be automated with the Cron service, I recommend running this every 5 minutes.
