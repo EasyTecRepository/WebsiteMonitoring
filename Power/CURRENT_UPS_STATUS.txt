@@ -1,0 +1,3 @@
+# LOG - UPS STATUS - Please leave this file as it is! - Read only, write nothing!
+# In this .txt file every few seconds the current status of the UPS is written.
+# This script will have a maximum of 10 values and a minimum of 5 values. These values are always the last 5-10 statuses.
