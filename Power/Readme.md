@@ -1,6 +1,7 @@
 ## Detect power failure
 ### With this script a power failure can be detected and saved to a .txt file.
 **Please read these instructions carefully before running!**
+**If you need help, check out this [YouTube video](https://www.youtube.com/EasyTec100).**
 
 ## Preconditions
 - [x] You have a Unraid server
@@ -8,23 +9,44 @@
 - [x] You use the default setting to view the status of your UPS (-> SETTINGS; UPS Settings)
 
 ## Customize files
-1. Go to the terminal of Unraid.
-2. Change the directory with the following command: ```cd /usr/local/emhttp/plugins/dynamix.apcupsd/```
-3. Create here with the following command the file, in which later the current status is written: ```nano CURRENT_UPS_STATUS.txt```
-4. After the editor opens, copy and paste [this script](https://github.com/EasyTecRepository/StatuspageAutomation/blob/main/Power/CURRENT_UPS_STATUS.txt).
-5. Now save the file with:
+1. Go to the Unraid web interface. 
+2. Go to ```ADD SHARE``` under ```SHARES```.
+3. Enter a name of your choice. For example: ```statuspage_power```.
+4. Enter a description of your choice. For example: ```Update files for status page power section```.
+5. Click on ```DONE```.
+6. Scroll down and select under ```SMB Security Settings``` ```Private``` from the ```Security``` drop-down menu.
+7. click ```DONE``` again.
+8. now open the terminal of Unraid.
+9. Enter: ```cd /mnt/user/statuspage_power``` (instead of ```statuspage_power``` enter your chosen share name)
+10. Enter now: ```nano CURRENT_UPS_STATUS.txt```.
+11. After the editor opens, copy and paste [this script](https://github.com/EasyTecRepository/StatuspageAutomation/blob/main/Power/CURRENT_UPS_STATUS.txt).
+12. Now save the file with:
    - ```control+O``` & ```control+X``` (macOS)
    - ```STRG+O``` & ```STRG+X``` (Windows)
-6. Now go to the ```/include``` directory with the following command: ```cd /include```
-7. Open here the php file ```UPSstatus.php``` with: ```nano UPSstatus.php```
-8. Go to line 52 here and paste [this script](https://github.com/EasyTecRepository/StatuspageAutomation/blob/main/Power/raw_php.php). (Also look at the picture to complete the paragraph correctly!)
-   - ⚠️: Please do not forget to adjust the placeholder "PLEASE_EDIT_ME.txt"!
-   - ⚠️: This should normally be -if you haven't changed anything in your system paths- the following path: ```/usr/local/emhttp/plugins/dynamix.apcupsd/CURRENT_UPS_STATUS.txt```
-![PICTURE UPSstatus_php](https://github.com/EasyTecRepository/StatuspageAutomation/blob/main/images/UPSstatus.png)
-9. This script must also be saved as before:
+
+13. Repeat the process with the following script:
+   - Enter: ```nano keep_order_in_log.php``` and paste [this script](https://github.com/EasyTecRepository/StatuspageAutomation/blob/main/Power/keep_order_in_log.php).
+   - Now save the file with:
+      - ⚠️ Please do not forget to adjust the placeholder "$filelocation"!
+      - ```control+O``` & ```control+X``` (macOS)
+      - ```STRG+O``` & ```STRG+X``` (Windows)
+14. Now change the path with ```cd``` and ```cd /etc/apcupsd/```.
+15. Enter: ```nano onbattery```.
+16. Add [this script](https://github.com/EasyTecRepository/StatuspageAutomation/blob/main/Power/insert_onbattery) to line 18.
+17. Save the script with:
    - ```control+O``` & ```control+X``` (macOS)
    - ```STRG+O``` & ```STRG+X``` (Windows)
-10. Now the setup of the process is complete. Now every (approx.) 2 seconds the current status of the UPS should be displayed in the file (See point 4).
+   - ⚠️ Please do not forget to adjust the placeholder "$filelocation" and "$php_script_location"!
+   - Note that you only need to insert the part between ```### BEGIN OF EDIT ###``` and ```### END OF EDIT ###```. (Also see picture) ![PICTURE Unraid_shell_onbattery_insert](https://github.com/EasyTecRepository/StatuspageAutomation/blob/main/images/Unraid_shell_onbattery_insert.png)
+18. Enter: ```nano offbattery```.
+19. Add [this script](https://github.com/EasyTecRepository/StatuspageAutomation/blob/main/Power/insert_offbattery) to line 18.
+20. Save the script with:
+   - ```control+O``` & ```control+X``` (macOS)
+   - ```STRG+O``` & ```STRG+X``` (Windows)
+   - ⚠️ Please do not forget to adjust the placeholder "$filelocation" and "$php_script_location"!
+   - Note that you only need to insert the part between ```### BEGIN OF EDIT ###``` and ```### END OF EDIT ###```. (Also see picture) ![PICTURE Unraid_shell_offbattery_insert](https://github.com/EasyTecRepository/StatuspageAutomation/blob/main/images/Unraid_shell_offbattery_insert.png)
+   - 
+21. Ready. Every time the power goes out, or when it comes back, one of the scripts (onbattery or offbattery) is executed and thus the new part that writes the current status to the log (See point 11).
 
 ## Include statuspage (with script)
 After the files have been adjusted, the script can now be set up, which will later flow out the file created above and report the status to Statuspage if necessary.
