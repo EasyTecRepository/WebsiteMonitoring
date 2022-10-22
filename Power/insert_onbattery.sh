@@ -13,9 +13,9 @@ filelocation="/mnt/user/add_your_share_name/CURRENT_UPS_STATUS.txt"
 php_script_location="/mnt/user/add_your_share_name/statuspage_log_order.php"
 
 # Write status to file
-echo -e "On Battery \n" >> $"filelocation"
+echo -e "On Battery" >> "$filelocation"
 
 # Run php script to keep log in order
-php $"php_script_location"
+php "$php_script_location"
 
 ### END OF EDIT ###
