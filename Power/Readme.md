@@ -32,14 +32,14 @@
       - ```STRG+O``` & ```STRG+X``` (Windows)
 14. Now change the path with ```cd``` and ```cd /etc/apcupsd/```.
 15. Enter: ```nano onbattery```.
-16. Add [this script](https://github.com/EasyTecRepository/StatuspageAutomation/blob/main/Power/insert_onbattery) to line 18.
+16. Add [this script](https://github.com/EasyTecRepository/StatuspageAutomation/blob/main/Power/insert_onbattery.sh) to line 18.
 17. Save the script with:
    - ```control+O``` & ```control+X``` (macOS)
    - ```STRG+O``` & ```STRG+X``` (Windows)
    - ⚠️ Please do not forget to adjust the placeholder "$filelocation" and "$php_script_location"!
    - Note that you only need to insert the part between ```### BEGIN OF EDIT ###``` and ```### END OF EDIT ###```. (Also see picture) ![PICTURE Unraid_shell_onbattery_insert](https://github.com/EasyTecRepository/StatuspageAutomation/blob/main/images/Unraid_shell_onbattery_insert.png)
 18. Enter: ```nano offbattery```.
-19. Add [this script](https://github.com/EasyTecRepository/StatuspageAutomation/blob/main/Power/insert_offbattery) to line 18.
+19. Add [this script](https://github.com/EasyTecRepository/StatuspageAutomation/blob/main/Power/insert_offbattery.sh) to line 18.
 20. Save the script with:
    - ```control+O``` & ```control+X``` (macOS)
    - ```STRG+O``` & ```STRG+X``` (Windows)
