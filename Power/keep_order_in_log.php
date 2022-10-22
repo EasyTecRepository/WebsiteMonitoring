@@ -7,7 +7,7 @@
  * Please change the $filelocation! - edit "add_your_share_name"
  */
 ?>
-<?
+<?PHP
     // order data in .txt file
     $filelocation = '/mnt/user/add_your_share_name/CURRENT_UPS_STATUS.txt'; // Location of .txt (log) file
     $_filesize = file( $filelocation ); // Determining the number of lines in the .txt file
