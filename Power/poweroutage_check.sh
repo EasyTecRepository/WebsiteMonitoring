@@ -23,7 +23,7 @@ COMPONENTID5="your component id"
 COMPONENTID6="your component id"
 COMPONENTID7="your component id"
 
-# Log Path/Location - (default: /usr/local/emhttp/plugins/dynamix.apcupsd/CURRENT_UPS_STATUS.txt)
+# Log Path/Location - (default: /mnt/user/statuspage_power/CURRENT_UPS_STATUS.txt)
 log_path=""
 
 ### DO NOT ADJUST ANYTHING FROM THIS POINT ON! - (Unless you want to take the risk) ###
