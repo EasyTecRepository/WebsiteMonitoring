@@ -48,7 +48,7 @@ quest_incident=$(curl --silent -H "Authorization: OAuth "${AUTHKEY}"" -X GET htt
 if [[ "$UPS_STATUS" == "Online" ]] && [ -z "$quest_incident" ]; then
     debug="1" #set debug
     #echo "okay - nothing"#ONLY FOR DEBUG
-elif [[ "$UPS_STATUS" == *"On battery"* ]] && [ -z "$quest_incident" ]&& [[ ! "$UPS_STATUS_secound" == *"On battery"* ]]; then
+elif [[ "$UPS_STATUS" == *"On battery"* ]] && [ -z "$quest_incident" ] && [[ ! "$UPS_STATUS_secound" == *"On battery"* ]]; then
     curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X POST -d "incident[name]=Power failure" -d "incident[status]=investigating" -d "incident[impact_override]=minor" -d "incident[body]=Power failure - automatically generated message" -d "incident[components["${COMPONENTID_master}"]]=major_outage" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents
     #echo "okay - Power failure"#ONLY FOR DEBUG
 elif [[ "$UPS_STATUS" == *"0"* ]] || [ -z "$quest_incident" ] && [[ ! "$UPS_STATUS_secound" == *"0"* ]]; then
