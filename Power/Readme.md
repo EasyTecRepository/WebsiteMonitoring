@@ -8,6 +8,8 @@
 - [x] You have a UPS (no matter which one)
 - [x] You use the default setting to view the status of your UPS (-> SETTINGS; UPS Settings)
 
+**:warning: Note, however, that this adjustment in the system files is reset after EVERY UPDATE OF UNRAID!**
+
 ## Customize files
 1. Go to the Unraid web interface. 
 2. Go to ```ADD SHARE``` under ```SHARES```.
@@ -63,4 +65,4 @@ After the files have been adjusted, the script can now be set up, which will lat
       - Enter here now:
       - ```*/5 * * * *``` (all 5 minutes)
       - ```*/15 * * * *``` (all 15 minutes)
-9. After these steps, an error should now be reported on the statuspage every time the power fails. (Provided that an internet connection is available). 
+9. After these steps, an error should now be reported on the statuspage every time the power fails. (Provided that an internet connection is available).
