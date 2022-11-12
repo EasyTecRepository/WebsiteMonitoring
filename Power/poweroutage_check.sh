@@ -68,12 +68,12 @@ fi
 
 SECONDS=0 #SET TIME
 WAIT="6000" #SET WAIT TIME (default: 6000 => 100minutes)
-if [ $SECONDS > $WAIT ] && [[ "$UPS_STATUS" == *"On battery"* ]]; then #question how long power outage already lasts
+if [ $SECONDS -gt $WAIT ] && [[ "$UPS_STATUS" == *"On battery"* ]]; then #question how long power outage already lasts
     curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X PATCH -d "incident[status]=investigating" -d "incident[impact_override]=major" -d "incident[body]=Power outage for over 2 hours! - automatically generated message" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents/"$quest_incident"
     for loop in {0..6}; do
         curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X PATCH -d "component[status]=degraded_performance" https://api.statuspage.io/v1/pages/"${PAGEID}"/components/"${raw_COMPONENTID_array[$loop]}"
     done
 else
-    #echo "Not longer than "$WAIT" secounds"#ONLY FOR DEBUG
+    #echo "Not longer than "$WAIT" secounds" #ONLY FOR DEBUG
     debug="1" #set debug
 fi
