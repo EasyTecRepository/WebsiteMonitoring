@@ -45,7 +45,7 @@ UPS_STATUS_secound=$(sudo tail -n 2 "${log_path}" | sed -n "1p")
 quest_incident=$(curl --silent -H "Authorization: OAuth "${AUTHKEY}"" -X GET https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents/unresolved | cut -c9-20)
 
 
-if [[ "$UPS_STATUS" == "Online" ]] && [ -z "$quest_incident" ]; then
+if [[ "$UPS_STATUS" == *"Off Battery"* ]] && [ -z "$quest_incident" ]; then
     debug="1" #set debug
     #echo "okay - nothing"#ONLY FOR DEBUG
 elif [[ "$UPS_STATUS" == *"On battery"* ]] && [ -z "$quest_incident" ] && [[ ! "$UPS_STATUS_secound" == *"On battery"* ]]; then
@@ -54,7 +54,7 @@ elif [[ "$UPS_STATUS" == *"On battery"* ]] && [ -z "$quest_incident" ] && [[ ! "
 elif [[ "$UPS_STATUS" == *"0"* ]] || [ -z "$quest_incident" ] && [[ ! "$UPS_STATUS_secound" == *"0"* ]]; then
     curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X POST -d "incident[name]=Query error" -d "incident[status]=investigating" -d "incident[impact_override]=minor" -d "incident[body]=Query error of the script - automatically generated message" -d "incident[components["${COMPONENTID_master}"]]=partial_outage" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents
     #echo "error - Query error of the script"#ONLY FOR DEBUG
-elif [[ "$UPS_STATUS" == *"Online"* ]] && [ ! -z "$quest_incident" ] && [[ ! "$UPS_STATUS_secound" == *"Online"* ]]; then
+elif [[ "$UPS_STATUS" == *"Off Battery"* ]] && [ ! -z "$quest_incident" ] && [[ ! "$UPS_STATUS_secound" == *"Off Battery"* ]]; then
     curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X PATCH -d "incident[status]=resolved" -d "incident[components["${COMPONENTID_master}"]]=operational" -d "incident[body]=Power supply has returned / Error fixed - automatically generated message" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents/"$quest_incident"
     #echo "okay - Power supply has returned / Error fixed"#ONLY FOR DEBUG
 elif [ -z "$quest_incident" ]; then
