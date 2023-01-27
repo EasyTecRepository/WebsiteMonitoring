@@ -37,6 +37,21 @@ or
 bash statuspage_discord_extended.sh
 ```
 
+## Discord.sh setup (optional)
+1. Enter the following in the (Unraid) terminal: 
+```
+cd /boot/config/plugins/user.scripts/scripts
+```
+2. Use the following command to create the discord.sh file:
+```
+nano discord.sh
+```
+3. Copy this [script from ChaoticWeg](https://github.com/ChaoticWeg/discord.sh/blob/master/discord.sh) and paste it into the discord.sh file.
+4. Save it and exit the editor with:
+   - ```control+O``` & ```control+X``` (macOS)
+   - ```STRG+O``` & ```STRG+X``` (Windows)
+5. Ready. Now the status page script should be able to send a notification via a Discord webhook (If you set the variables in the script correctly).
+
 ## Automation
 This can also be automated with the Cron service, I recommend running this every 5 minutes.
 And this is how it works:
