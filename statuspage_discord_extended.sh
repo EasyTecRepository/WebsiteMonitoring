@@ -144,7 +144,7 @@ else
     # query status (STATUSPAGE) - IncidentID checker
     quest_incident=$(curl --silent -H "Authorization: OAuth "${AUTHKEY}"" -X GET https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents/unresolved | cut -c9-20)
     for schleife in {0..6}; do
-
+        sleep 2 #sleep
         #FUNCTION FOR DISCORD
         if [ -z "${DOMAIN_array_DISCORD[$schleife]}" ]; then
             DOMAIN_array_DISCORD[$schleife]="---"
