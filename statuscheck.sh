@@ -264,6 +264,7 @@ if [[ statuspage_q -eq 1 ]]; then
             if [[ " ${http_status_codes[@]} " =~ " 200 " ]]; then # Check if any service has a different status than 200
                 incidentID=$(curl --silent -H "Authorization: OAuth "${AUTHKEY}"" -X GET https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents/unresolved | jq -r '.[0].id')
                 if [ ! -z "$incidentID" ]; then
+                    echo "Close incident..."
                     # Close incident as there is no longer a problem
                     if [[ statuspage_q -eq 1 ]] && [ "$statuspage_already_sent" = "true" ]; then
                         statuspage_already_sent="false" # Update variable (statuspage)
@@ -282,6 +283,8 @@ if [[ statuspage_q -eq 1 ]]; then
                             python3 "$mailscript_path" "$SMTPFROM" "$recipients_string" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
                         done
                     fi
+                else
+                    echo "No incident to close."
                 fi
             fi
         fi
