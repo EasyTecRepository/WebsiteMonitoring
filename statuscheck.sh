@@ -169,8 +169,8 @@ if [[ statuspage_q -eq 1 ]]; then
                     # Incident not created yet
                     echo "Incident not present for ${SERVICE_ARRAY[$i]}. Will be created."
                     incidentID=$(curl --silent -H "Authorization: OAuth "${AUTHKEY}"" -X GET https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents/unresolved | jq -r '.[0].id')
+                    httpCodeCurrent="http${http_status_codes[i]}" # Define current http status code query
                     if [ -z "${http_status_codes[$i]}" ]; then
-                        httpCodeCurrent="${http_status_codes[$i]}" # Define current http status code query
                         # Empty (000)
                         echo "Service: ${SERVICE_ARRAY[$i]} | Domain: ${DOMAIN_ARRAY[$i]} | HTTP status: ${http_status_codes[$i]}"
                         if [[ statuspage_q -eq 1 ]] && [ "$statuspage_already_sent" = "false" ]; then
@@ -181,7 +181,7 @@ if [[ statuspage_q -eq 1 ]]; then
                         if [[ discord_q -eq 1 ]] && [ "$discord_already_sent" = "false" ]; then
                             discord_already_sent="true" # Update variable (discord)
                             sed -i "8s/0/1/" "$storage_file_path" # Update txt file (discord)
-                        sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_ERROR_TITLE" --description "Service(s) affected: "${SERVICE_ARRAY[$i]}"" --color "$DISCORD_ERROR_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_ERROR_THUMBNAIL" --field "CURRENT STATUS:;"${http_status_codes[$i]}" - "$httpCodeCurrent"" --footer "automatically generated message" --timestamp
+                        sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_ERROR_TITLE" --description "Service(s) affected: "${SERVICE_ARRAY[$i]}"" --color "$DISCORD_ERROR_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_ERROR_THUMBNAIL" --field "CURRENT STATUS:;"${http_status_codes[$i]}" "${!httpCodeCurrent}"" --footer "automatically generated message" --timestamp
                         fi
                         if [[ email_q -eq 1 ]] && [ "$email_already_sent" = "false" ]; then
                             email_already_sent="true" # Update variable (email)
@@ -197,12 +197,12 @@ if [[ statuspage_q -eq 1 ]]; then
                         if [[ statuspage_q -eq 1 ]] && [ "$statuspage_already_sent" = "false" ]; then
                             statuspage_already_sent="true" # Update variable (statuspage)
                             sed -i "5s/0/1/" "$storage_file_path" # Update txt file (statuspage)
-                            curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X POST -d "incident[name]=unknown fault" -d "incident[status]=investigating" -d "incident[impact_override]=minor" -d "incident[body]="${http_status_codes[$i]}" - "$httpCodeCurrent" error - automatically generated message" -d "incident[components["${COMPONENTID_ARRAY[$i]}"]]=partial_outage" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents
+                            curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X POST -d "incident[name]=unknown fault" -d "incident[status]=investigating" -d "incident[impact_override]=minor" -d "incident[body]="${http_status_codes[$i]}" "${!httpCodeCurrent}" error - automatically generated message" -d "incident[components["${COMPONENTID_ARRAY[$i]}"]]=partial_outage" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents
                         fi
                         if [[ discord_q -eq 1 ]] && [ "$discord_already_sent" = "false" ]; then
                             discord_already_sent="true" # Update variable (discord)
                             sed -i "8s/0/1/" "$storage_file_path" # Update txt file (discord)
-                            sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_ERROR_TITLE" --description "Service(s) affected: "${SERVICE_ARRAY[$i]}"" --color "$DISCORD_FAILURE_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_FAILURE_THUMBNAIL" --field "CURRENT STATUS:;"${http_status_codes[$i]}" - "$httpCodeCurrent"" --footer "automatically generated message" --timestamp
+                            sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_ERROR_TITLE" --description "Service(s) affected: "${SERVICE_ARRAY[$i]}"" --color "$DISCORD_FAILURE_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_FAILURE_THUMBNAIL" --field "CURRENT STATUS:;"${http_status_codes[$i]}" "${!httpCodeCurrent}"" --footer "automatically generated message" --timestamp
                         fi
                         if [[ email_q -eq 1 ]] && [ "$email_already_sent" = "false" ]; then
                             email_already_sent="true" # Update variable (email)
@@ -218,12 +218,12 @@ if [[ statuspage_q -eq 1 ]]; then
                         if [[ statuspage_q -eq 1 ]] && [ "$statuspage_already_sent" = "false" ]; then
                             statuspage_already_sent="true" # Update variable (statuspage)
                             sed -i "5s/0/1/" "$storage_file_path" # Update txt file (statuspage)
-                            curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X POST -d "incident[name]=unknown fault" -d "incident[status]=investigating" -d "incident[impact_override]=minor" -d "incident[body]="${http_status_codes[$i]}" - "$httpCodeCurrent" error - automatically generated message" -d "incident[components["${COMPONENTID_ARRAY[$i]}"]]=partial_outage" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents
+                            curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X POST -d "incident[name]=unknown fault" -d "incident[status]=investigating" -d "incident[impact_override]=minor" -d "incident[body]="${http_status_codes[$i]}" "${!httpCodeCurrent}" error - automatically generated message" -d "incident[components["${COMPONENTID_ARRAY[$i]}"]]=partial_outage" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents
                         fi
                         if [[ discord_q -eq 1 ]] && [ "$discord_already_sent" = "false" ]; then
                             discord_already_sent="true" # Update variable (discord)
                             sed -i "8s/0/1/" "$storage_file_path" # Update txt file (discord)
-                            sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_ERROR_TITLE" --description "Service(s) affected: "${SERVICE_ARRAY[$i]}"" --color "$DISCORD_FAILURE_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_FAILURE_THUMBNAIL" --field "CURRENT STATUS:;"${http_status_codes[$i]}" - "$httpCodeCurrent"" --footer "automatically generated message" --timestamp
+                            sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_ERROR_TITLE" --description "Service(s) affected: "${SERVICE_ARRAY[$i]}"" --color "$DISCORD_FAILURE_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_FAILURE_THUMBNAIL" --field "CURRENT STATUS:;"${http_status_codes[$i]}" "${!httpCodeCurrent}"" --footer "automatically generated message" --timestamp
                         fi
                         if [[ email_q -eq 1 ]] && [ "$email_already_sent" = "false" ]; then
                             email_already_sent="true" # Update variable (email)
