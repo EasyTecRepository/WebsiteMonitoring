@@ -146,11 +146,11 @@ if [[ statuspage_q -eq 1 ]]; then
         service="${SERVICE_ARRAY[i]}"
         http_status=$(curl -s -o /dev/null -w "%{http_code}" -L "$domain")
         http_status_codes+=("$http_status")
+        COMPONENTID_ARRAY_AFFECTED+=("$COMPONENTID_ARRAY[i]")
     done
     for ((i = 0; i < count_domain_status; i++)); do
         #
         if [[ "${http_status[$i]}" -ne 200 ]]; then
-            COMPONENTID_ARRAY_AFFECTED+=("$COMPONENTID_ARRAY[i]")
             # http status not 200
             # Check if the JSON response contains the keyword for planned maintenance status
             if [ $(curl --silent -H "Authorization: OAuth "${AUTHKEY}"" -X GET "https://api.statuspage.io/v1/pages/$PAGEID/components/$COMPONENTID_ARRAY[$i]" | jq -r '.status') ]; then
@@ -187,7 +187,7 @@ if [[ statuspage_q -eq 1 ]]; then
                             email_already_sent="true" # Update variable (email)
                             sed -i "11s/0/1/" "$storage_file_path" # Update txt file (email)
                             for recipient in "${SMTPTO[@]}"; do
-                                python3 "$mailscript_path" "$SMTPFROM" "$"$recipients_string"" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
+                                python3 "$mailscript_path" "$SMTPFROM" "$recipients_string" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
                             done
                         fi
                         echo
@@ -208,7 +208,7 @@ if [[ statuspage_q -eq 1 ]]; then
                             email_already_sent="true" # Update variable (email)
                             sed -i "11s/0/1/" "$storage_file_path" # Update txt file (email)
                             for recipient in "${SMTPTO[@]}"; do
-                                python3 "$mailscript_path" "$SMTPFROM" "$"$recipients_string"" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
+                                python3 "$mailscript_path" "$SMTPFROM" "$recipients_string" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
                             done
                         fi
                         echo
@@ -229,7 +229,7 @@ if [[ statuspage_q -eq 1 ]]; then
                             email_already_sent="true" # Update variable (email)
                             sed -i "11s/0/1/" "$storage_file_path" # Update txt file (email)
                             for recipient in "${SMTPTO[@]}"; do
-                                python3 "$mailscript_path" "$SMTPFROM" "$"$recipients_string"" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
+                                python3 "$mailscript_path" "$SMTPFROM" "$recipients_string" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
                             done
                         fi
                         echo
@@ -250,7 +250,7 @@ if [[ statuspage_q -eq 1 ]]; then
                             email_already_sent="true" # Update variable (email)
                             sed -i "11s/0/1/" "$storage_file_path" # Update txt file (email)
                             for recipient in "${SMTPTO[@]}"; do
-                                python3 "$mailscript_path" "$SMTPFROM" "$"$recipients_string"" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
+                                python3 "$mailscript_path" "$SMTPFROM" "$recipients_string" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
                             done
                         fi
                         echo
@@ -263,16 +263,25 @@ if [[ statuspage_q -eq 1 ]]; then
             ###
             if [[ " ${http_status_codes[@]} " =~ " 200 " ]]; then # Check if any service has a different status than 200
                 incidentID=$(curl --silent -H "Authorization: OAuth "${AUTHKEY}"" -X GET https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents/unresolved | jq -r '.[0].id')
-                if [ ! -z "$incidentID" ] && [ "$statuspage_already_sent" = "true" ] && [ "$discord_already_sent" = "true" ] && [ "$email_already_sent" = "true" ]; then
-                    statuspage_already_sent="false" # Update variable (statuspage)
-                    discord_already_sent="false" # Update variable (discord)
-                    email_already_sent="false" # Update variable (email)
-                    sed -i "5s/1/0/" "$storage_file_path" # Update txt file (statuspage)
-                    sed -i "8s/1/0/" "$storage_file_path" # Update txt file (discord)
-                    sed -i "11s/1/0/" "$storage_file_path" # Update txt file (email)
+                if [ ! -z "$incidentID" ]; then
                     # Close incident as there is no longer a problem
-                    curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X PATCH -d "incident[status]=resolved" -d "incident[components["${COMPONENTID_ARRAY}"]]=operational" -d "incident[body]=page now available - automatically generated message" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents/"$incidentID"
-                    sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_OKAY_TITLE" --description "Service(s) affected: "${array_REPORTED_WEBSITES[$schleife]}"" --color "$DISCORD_OKAY_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_OKAY_THUMBNAIL" --field "CURRENT STATUS:;"${http_status[$i]}"" --footer "automatically generated message" --timestamp
+                    if [[ statuspage_q -eq 1 ]] && [ "$statuspage_already_sent" = "true" ]; then
+                        statuspage_already_sent="false" # Update variable (statuspage)
+                        sed -i "5s/1/0/" "$storage_file_path" # Update txt file (statuspage)
+                        curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X PATCH -d "incident[status]=resolved" -d "incident[components["${COMPONENTID_ARRAY}"]]=operational" -d "incident[body]=page now available - automatically generated message" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents/"$incidentID"
+                    fi
+                    if [[ discord_q -eq 1 ]] && [ "$discord_already_sent" = "true" ]; then
+                        discord_already_sent="false" # Update variable (discord)
+                        sed -i "8s/1/0/" "$storage_file_path" # Update txt file (discord)
+                        sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_OKAY_TITLE" --description "Service(s) affected: "${array_REPORTED_WEBSITES[$schleife]}"" --color "$DISCORD_OKAY_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_OKAY_THUMBNAIL" --field "CURRENT STATUS:;"${http_status[$i]}"" --footer "automatically generated message" --timestamp
+                    fi
+                    if [[ email_q -eq 1 ]] && [ "$email_already_sent" = "true" ]; then
+                        email_already_sent="false" # Update variable (email)
+                        sed -i "11s/1/0/" "$storage_file_path" # Update txt file (email)
+                        for recipient in "${SMTPTO[@]}"; do
+                            python3 "$mailscript_path" "$SMTPFROM" "$recipients_string" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
+                        done
+                    fi
                 fi
             fi
         fi
