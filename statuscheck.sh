@@ -191,7 +191,7 @@ if [[ statuspage_q -eq 1 ]]; then
                             done
                         fi
                         echo
-                    elif [ "${http_status_codes[$i]}" -ge 400 ] && [ "${http_status_codes[$i]}" -le 451 ] && [[ " ${excluded_statuscodes_4xx[@]} " =~ " ${http_status_codes[$i]} " ]]; then
+                    elif [ "${http_status_codes[$i]}" -ge 400 ] && [ "${http_status_codes[$i]}" -le 451 ] && [[ ! " ${excluded_statuscodes_4xx[@]} " =~ " ${http_status_codes[$i]} " ]]; then
                         # 4xx
                         echo "Service: ${SERVICE_ARRAY[$i]} | Domain: ${DOMAIN_ARRAY[$i]} | HTTP status: ${http_status_codes[$i]}"
                         if [[ statuspage_q -eq 1 ]] && [ "$statuspage_already_sent" = "false" ]; then
@@ -212,7 +212,7 @@ if [[ statuspage_q -eq 1 ]]; then
                             done
                         fi
                         echo
-                    elif [ "${http_status_codes[$i]}" -ge 500 ] && [ "${http_status_codes[$i]}" -le 511 ] && [[ " ${excluded_statuscodes_5xx[@]} " =~ " ${http_status_codes[$i]} " ]]; then
+                    elif [ "${http_status_codes[$i]}" -ge 500 ] && [ "${http_status_codes[$i]}" -le 511 ] && [[ ! " ${excluded_statuscodes_5xx[@]} " =~ " ${http_status_codes[$i]} " ]]; then
                         # 5xx
                         echo "Service: ${SERVICE_ARRAY[$i]} | Domain: ${DOMAIN_ARRAY[$i]} | HTTP status: ${http_status_codes[$i]}"
                         if [[ statuspage_q -eq 1 ]] && [ "$statuspage_already_sent" = "false" ]; then
@@ -260,12 +260,10 @@ if [[ statuspage_q -eq 1 ]]; then
         else
             # http status is 200
             echo "Service: ${SERVICE_ARRAY[$i]} | Domain: ${DOMAIN_ARRAY[$i]} | HTTP status: ${http_status_codes[$i]} | available"
-            echo
-            ###
             if [[ " ${http_status_codes[@]} " =~ " 200 " ]]; then # Check if any service has a different status than 200
-                incidentID=$(curl --silent -H "Authorization: OAuth "${AUTHKEY}"" -X GET https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents/unresolved | jq -r '.[0].id')
-                if [ ! -z "$incidentID" ]; then
+                if [ $(curl --silent -H "Authorization: OAuth "${AUTHKEY}"" -X GET https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents/unresolved | jq -r '.[0].id') != "null" ]; then
                     echo "Close incident..."
+                    echo
                     # Close incident as there is no longer a problem
                     if [[ statuspage_q -eq 1 ]] && [ "$statuspage_already_sent" = "true" ]; then
                         statuspage_already_sent="false" # Update variable (statuspage)
@@ -286,6 +284,7 @@ if [[ statuspage_q -eq 1 ]]; then
                     fi
                 else
                     echo "No incident to close."
+                    echo
                 fi
             fi
         fi
