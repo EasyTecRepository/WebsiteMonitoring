@@ -34,6 +34,55 @@ Change to folder
 cd WebsiteMonitoring
 ```
 
+Adjust all variables
+
+| General Variables            | Description                                                                          |
+| ---------------------------- | ------------------------------------------------------------------------------------ |
+|statuspage_q                  | Specifies whether you want to use the function of Statuspage or not                  |
+|discord_q                     | Specifies whether you want to use the function of Discord-Webhook or not             |
+|email_q                       | Specifies whether you want to use the function of E-Mail-Notification or not         |
+
+| Statuspage.io Variables      | Description                                                                          |
+| ---------------------------- | ------------------------------------------------------------------------------------ |
+|AUTHKEY                       | Specifies which authentication token to use for statuspage                           |
+|PAGEID                        | Specifies which pageid to use for statuspage                                         |
+|DOMAIN_ARRAY                  | Here are all your website URL's                                                      |
+|SERVICE_ARRAY                 | Here are all your website names (You can choose what you call them)                  |
+|COMPONENTID_ARRAY             | Specifies which ComponentID's on statuspage are affected                             |
+
+| Discord Variables            | Description                                                                          |
+| ---------------------------- | ------------------------------------------------------------------------------------ | 
+|WEBHOOK                       | Specifies which webhook to use for discord                                           |
+|DISCORD_USERNAME              | Specifies which username to use for your discord webhook                             |
+|DISCORD_AVATAR_URL            | Specifies which URL to use for your discord webhook avatar                           |
+|DISCORD_ERROR_TITLE           | Specifies which title you use for an error message                                   |
+|DISCORD_OKAY_TITLE            | Specifies which title you use for an okay message                                    |
+|DISCORD_FAILURE_TITLE         | Specifies which title you use for an failure message                                 |
+|DISCORD_DEGRADED_TITLE        | Specifies which title you use for an degraded performance message                    |
+|DISCORD_MAINTENANCE_TITLE     | Specifies which title you use for an maintenance message                             |
+|DISCORD_ERROR_COLOR           | Specifies which color (html) you use for an error message                            |
+|DISCORD_FAILURE_COLOR         | Specifies which color (html) you use for an failure message                          |
+|DISCORD_OKAY_COLOR            | Specifies which color (html) you use for an okay message                             |
+|DISCORD_DEGRADED_COLOR        | Specifies which color (html) you use for an degraded performance message             |
+|DISCORD_MAINTENANCE_COLOR     | Specifies which color (html) you use for an maintenance message                      |
+|DISCORD_AUTHOR                | Specifies which Author name you use for your discord webhook message                 |
+|DISCORD_AUTHOR_URL            | Specifies which Author URL you use for your discord webhook message                  |
+|DISCORD_AUTHOR_ICON           | Specifies which Author ICON (URL) you use for your discord webhook message           |
+|DISCORD_ERROR_THUMBNAIL       | Specifies which Thumbnail (URL) you use for your discord webhook error message       |
+|DISCORD_OKAY_THUMBNAIL        | Specifies which Thumbnail (URL) you use for your discord webhook okay message        |
+|DISCORD_MAINTENANCE_THUMBNAIL | Specifies which Thumbnail (URL) you use for your discord webhook maintenance message |
+|DISCORD_FAILURE_THUMBNAIL     | Specifies which Thumbnail (URL) you use for your discord webhook failure message     |
+|DISCORD_SH_LOCATION           | Specifies under which path the discord.sh script is located                          |
+
+| E-Mail Variables             | Description                                                                          |
+| ---------------------------- | ------------------------------------------------------------------------------------ |
+|SMTPFORM                      | Specifies which e-mail address is used as the sender address                         |
+|SMTPTO                        | Specifies which e-mail addresses are used as recipient addresses                     |
+|SMTPSERVER                    | Specifies which e-mail server with port is used                                      |
+|SMTPUSER                      | Specifies which user is used as the sender (usually the sender email address)        |
+|SMTPPASS                      | Specifies which SMTP password is used                                                |
+|mailscript_path               | Specifies under which path your mail script is stored                                |
+
 Run script
 ```
 bash statuscheck.sh
