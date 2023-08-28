@@ -1,4 +1,6 @@
 # Website Monitoring script 🖥️
+![](https://img.shields.io/badge/Status-In_Entwicklung-orange)
+![](https://img.shields.io/badge/Version-BETA-orange)
 
 This is an **easy way** to see the current status of your services, **no matter** where you are.
 
