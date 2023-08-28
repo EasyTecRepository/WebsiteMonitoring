@@ -1,0 +1,11 @@
+# This txt file serves as a variable store to avoid message spam.
+# Please do not make any changes here.
+#
+# Statuspage - 0 = Not sent | 1 = Already sent
+statuspage_sent=0
+#
+# Discord - 0 = Not sent | 1 = Already sent
+discord_sent=0
+#
+# E-Mail - 0 = Not sent | 1 = Already sent
+email_sent=0
