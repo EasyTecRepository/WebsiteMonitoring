@@ -18,7 +18,7 @@
 
 # Statuspage notifications
 # Please select: 1 = yes / 0 = no
-statuspage_q=1
+statuspage_q=0
 # Settings
 AUTHKEY="your api key" # OAuth API Key
 PAGEID="your page id" # Page ID
@@ -36,7 +36,7 @@ COMPONENTID_ARRAY=("012345" "123456" "234567" "345678")
 
 # Discord notifications
 # Please select: 1 = yes / 0 = no
-discord_q=1
+discord_q=0
 # Settings
 WEBHOOK="your webhook url" #Webhook
 DISCORD_USERNAME="your author name" #Username
