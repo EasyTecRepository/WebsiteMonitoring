@@ -1,40 +1,44 @@
-# StatuspageAutomation
-# Automation script of current website statuses using statuspage.io API
+# Website Monitoring script 🖥️
+
+This is an **easy way** to see the current status of your services, **no matter** where you are.
 
 Welcome to this repository!
 This repository contains a script with which you can query the current status of your websites.
-These are loaded directly into the statuspage.io overview via API, so you can see from anywhere if one of your services has errors or even crashed completely.
+You can choose which functions you want to have.
+
+Available features: **statuspage.io** , **Discord Webhook** , **E-Mail-Notification**
 
 If you need a detailed tutorial on setting it up, feel free to [check out this video on YouTube](https://youtube.com/EasyTec100)!
 
-## Install
-Install git tool
+## Requirements
+This git tool is needed to bring this repository to your system.
 ```
 sudo apt install git
 ```
 
-If you also want to use Discord Notifications, this tool must also be installed (otherwise this tool is not needed):
+This tool can parse, filter and transform JSON data. Mostly already preinstalled.
 ```
 sudo apt install jq
 ```
 
-## Run
-Change to folder
+## Get started
+Run the following command
 ```
-cd StatuspageAutomation
+https://github.com/EasyTecRepository/StatuspageAutomation.git
 ```
 
-Run any script ("network_status.sh" or "statuspage_extended.sh")
+Change to folder
 ```
-bash statuspage_extended.sh
+cd WebsiteMonitoring
 ```
-or
+
+Run script
+```
+bash statuscheck.sh
+```
+or (if you use my other scripts in this repository (e.g. network_status.sh))
 ```
 bash network_status.sh
-```
-or
-```
-bash statuspage_discord_extended.sh
 ```
 
 ## Discord.sh setup (optional)
