@@ -218,6 +218,7 @@ if [[ statuspage_q -eq 1 ]]; then
                             done
                         fi
                         echo
+                    fi
                 fi
             fi
         else
