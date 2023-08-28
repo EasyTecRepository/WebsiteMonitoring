@@ -63,8 +63,8 @@ DISCORD_SH_LOCATION="/boot/config/plugins/user.scripts/scripts/discord.sh" #Path
 # E-Mails
 # Please select: 1 = yes / 0 = no
 email_q=0
-SMTPFORM="mail@example.com"
-SMTPTO="mail@example.com"
+SMTPFROM="mail@example.com"
+SMTPTO=("mail1@example.com" "mail2@example.com")
 SMTPSERVER="smtp.googlemail.com:587"
 SMTPUSER="mail@example.com"
 SMTPPASS="a1b2c3d4e5f6g7"
@@ -160,7 +160,7 @@ if [[ statuspage_q -eq 1 ]]; then
                     if [ -z "${http_status[$i]}" ]; then
                         httpCodeCurrent="http${http_status[$i]}" # Define current http status code query
                         # Empty (000)
-                        echo "Service: ${service[$i]} | Domain: ${domain[$i]} | HTTP status: ${http_status[$i]}
+                        echo "Service: ${service[$i]} | Domain: ${domain[$i]} | HTTP status: ${http_status[$i]}"
                         if [[ statuspage_q -eq 1 ]]; then
                             curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X POST -d "incident[name]=unknown fault" -d "incident[status]=investigating" -d "incident[impact_override]=critical" -d "incident[body]=page not available - automatically generated message" -d "incident[components["${COMPONENTID_ARRAY[$i]}"]]=major_outage" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents
                         fi
@@ -168,12 +168,14 @@ if [[ statuspage_q -eq 1 ]]; then
                         sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_ERROR_TITLE" --description "Service(s) affected: "${service[$i]}"" --color "$DISCORD_ERROR_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_ERROR_THUMBNAIL" --field "CURRENT STATUS:;"${http_status[$i]}" - "$httpCodeCurrent"" --footer "automatically generated message" --timestamp
                         fi
                         if [[ email_q -eq 1 ]]; then
-                            bash $mailscript_path "$SMTPFORM" "$SMTPTO" "$SMTPSERVER" "$SMTPUSER" "$SMTPPASS"
+                            for recipient in "${SMTPTO[@]}"; do
+                                bash $mailscript_path "$recipient" "$SMTPTO" "$SMTPSERVER" "$SMTPUSER" "$SMTPPASS"
+                            done
                         fi
                         echo
                     elif [ "${http_status[$i]}" -ge 400 ] && [ "${http_status[$i]}" -le 451 ] && [[ " ${excluded_statuscodes_4xx[@]} " =~ " ${http_status[$i]} " ]]; then
                         # 4xx
-                        echo "Service: ${service[$i]} | Domain: ${domain[$i]} | HTTP status: ${http_status[$i]}
+                        echo "Service: ${service[$i]} | Domain: ${domain[$i]} | HTTP status: ${http_status[$i]}"
                         if [[ statuspage_q -eq 1 ]]; then
                             curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X POST -d "incident[name]=unknown fault" -d "incident[status]=investigating" -d "incident[impact_override]=minor" -d "incident[body]="${http_status[$i]}" - "$httpCodeCurrent" error - automatically generated message" -d "incident[components["${COMPONENTID_ARRAY[$i]}"]]=partial_outage" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents
                         fi
@@ -181,7 +183,9 @@ if [[ statuspage_q -eq 1 ]]; then
                             sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_ERROR_TITLE" --description "Service(s) affected: "${service[$i]}"" --color "$DISCORD_FAILURE_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_FAILURE_THUMBNAIL" --field "CURRENT STATUS:;"${http_status[$i]}" - "$httpCodeCurrent"" --footer "automatically generated message" --timestamp
                         fi
                         if [[ email_q -eq 1 ]]; then
-                            bash $mailscript_path "$SMTPFORM" "$SMTPTO" "$SMTPSERVER" "$SMTPUSER" "$SMTPPASS"
+                            for recipient in "${SMTPTO[@]}"; do
+                                bash $mailscript_path "$recipient" "$SMTPTO" "$SMTPSERVER" "$SMTPUSER" "$SMTPPASS"
+                            done
                         fi
                         echo
                     elif [ "${http_status[$i]}" -ge 500 ] && [ "${http_status[$i]}" -le 511 ] && [[ " ${excluded_statuscodes_5xx[@]} " =~ " ${http_status[$i]} " ]]; then
@@ -194,7 +198,9 @@ if [[ statuspage_q -eq 1 ]]; then
                             sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_ERROR_TITLE" --description "Service(s) affected: "${service[$i]}"" --color "$DISCORD_FAILURE_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_FAILURE_THUMBNAIL" --field "CURRENT STATUS:;"${http_status[$i]}" - "$httpCodeCurrent"" --footer "automatically generated message" --timestamp
                         fi
                         if [[ email_q -eq 1 ]]; then
-                            bash $mailscript_path "$SMTPFORM" "$SMTPTO" "$SMTPSERVER" "$SMTPUSER" "$SMTPPASS"
+                            for recipient in "${SMTPTO[@]}"; do
+                                bash $mailscript_path "$recipient" "$SMTPTO" "$SMTPSERVER" "$SMTPUSER" "$SMTPPASS"
+                            done
                         fi
                         echo
                     else
@@ -207,7 +213,9 @@ if [[ statuspage_q -eq 1 ]]; then
                             sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_ERROR_TITLE" --description "Service(s) affected: "${service[$i]}"" --color "$DISCORD_FAILURE_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_FAILURE_THUMBNAIL" --field "CURRENT STATUS:;"${http_status[$i]}" - non-official code" --footer "automatically generated message" --timestamp
                         fi
                         if [[ email_q -eq 1 ]]; then
-                            bash $mailscript_path "$SMTPFORM" "$SMTPTO" "$SMTPSERVER" "$SMTPUSER" "$SMTPPASS"
+                            for recipient in "${SMTPTO[@]}"; do
+                                bash $mailscript_path "$recipient" "$SMTPTO" "$SMTPSERVER" "$SMTPUSER" "$SMTPPASS"
+                            done
                         fi
                         echo
                 fi
