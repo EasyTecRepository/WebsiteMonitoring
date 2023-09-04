@@ -10,7 +10,7 @@
 #
 
 #
-# Version 1.0.0
+# Version 2.0.0
 # Version BETA
 #
 
@@ -30,7 +30,7 @@ PAGEID="your page id" # Page ID
 # Domain Name Array - Please in the same order as service names and component ID's
 DOMAIN_ARRAY=("https://domain.one/" "https://domain.two/" "https://domain.three/" "https://domain.four/")
 
-# Service Name Array - Please in the same order as domain names and component ID's
+# Service Name Array - Please in the same order as domain names and component ID'sf
 SERVICE_ARRAY=("DomainOne" "DomainTwo" "DomainThree" "DomainFour")
 
 # Component ID Array - Please in the same order as service names and domain names
@@ -73,7 +73,8 @@ SMTPSERVER="smtp.googlemail.com"
 SMTPPORT="587"
 SMTPUSER="mail@example.com"
 SMTPPASS="a1b2c3d4e5f6g7"
-mailscript_path="/path/to/script/script.py"
+mailscript_path_fault="/path/to/script/script.py" # E-mail for fault
+mailscript_path_okay="/path/to/script/script.py" # All clear email
 
 ## HTTP status code text ##
 # general
@@ -129,38 +130,49 @@ excluded_statuscodes_5xx=(509) # Array of excluded 5xx statuscodes
 ### FROM HERE PLEASE DO NOT MAKE ANY CHANGES ###
 
 # Define variables which should prevent spam messages
-statuspage_already_sent="false"
-discord_already_sent="false"
-email_already_sent="false"
+statuspage_already_sent=$(sed -n "5p" "$storage_file_path" | cut -d= -f2) # read current status of statuspage_already_sent
+discord_already_sent=$(sed -n "5p" "$storage_file_path" | cut -d= -f2) # read current status of statuspage_already_sent
+email_already_sent=$(sed -n "5p" "$storage_file_path" | cut -d= -f2) # read current status of statuspage_already_sent
 
 recipients_string="$(IFS=,; echo "${SMTPTO[*]}")" # Email address formatting
 
+# Read affected ComponentID's
+COMPONENTID_ARRAY_LAST_AFFECTED=() # Array for affected ComponentID's from the last script
+desired_line=$(sed -n "14p" "$storage_file_path") # Read affected ComponentID's of the txt-file
+IFS=, read -ra COMPONENTID_ARRAY_LAST_AFFECTED <<< "$desired_line" # Convert string back to array
 # Check Status
 if [[ statuspage_q -eq 1 ]]; then
     count_domain_status=${#DOMAIN_ARRAY[@]} # Get the number of domains in the array
     http_status_codes=() # Array for HTTP statuscodes
-    COMPONENTID_ARRAY_AFFECTED=() # Array for affected ComponentID'S
+    COMPONENTID_ARRAY_AFFECTED=() # Array for affected ComponentID's in this script
     # Loop for HTTP status request
     for ((i = 0; i < count_domain_status; i++)); do
         domain="${DOMAIN_ARRAY[i]}"
         service="${SERVICE_ARRAY[i]}"
         http_status=$(curl -s -o /dev/null -w "%{http_code}" -L "$domain")
         http_status_codes+=("$http_status")
-        COMPONENTID_ARRAY_AFFECTED+=("$COMPONENTID_ARRAY[i]")
+        if [[ "${http_status}" -ne 200 ]]; then
+            COMPONENTID_ARRAY_AFFECTED+=("${COMPONENTID_ARRAY[i]}")
+        fi
     done
+    # Write affected ComponentID's
+    array_string=$(IFS=,; echo "${COMPONENTID_ARRAY_AFFECTED[*]}") # Convert array to string
+    if [ ! -z $array_string ]; then
+        sed -i "14c\\$array_string" "$storage_file_path" # Save affected ComponentID's to txt-file
+    fi
+    #
     for ((i = 0; i < count_domain_status; i++)); do
-        #
         if [[ "${http_status_codes[$i]}" -ne 200 ]]; then
             # http status not 200
             # Check if the JSON response contains the keyword for planned maintenance status
-            if [ $(curl --silent -H "Authorization: OAuth "${AUTHKEY}"" -X GET "https://api.statuspage.io/v1/pages/$PAGEID/components/$COMPONENTID_ARRAY[$i]" | jq -r '.status') ]; then
+            if [ "$(curl --silent -H "Authorization: OAuth ${AUTHKEY}" -X GET "https://api.statuspage.io/v1/pages/$PAGEID/components/${COMPONENTID_ARRAY[$i]}" | jq -r '.status')" != "null" ] && [ "$(curl --silent -H "Authorization: OAuth ${AUTHKEY}" -X GET "https://api.statuspage.io/v1/pages/$PAGEID/components/${COMPONENTID_ARRAY[$i]}" | jq -r '.status')" == "under_maintenance" ]; then
                 # Maintenance active
                 echo "Note: Active maintenance mode at ${SERVICE_ARRAY[$i]}. Already reported error."
             else
                 # Maintenance not active
                 echo "Note: No active maintenance mode at ${SERVICE_ARRAY[$i]}. This means that it is probably an unreported error."
                 # Check if the JSON response contains the keyword for problems (incident)
-                if [ $(curl --silent -H "Authorization: OAuth "${AUTHKEY}"" -X GET "https://api.statuspage.io/v1/pages/$PAGEID/incidents/unresolved" | jq -r '.[0].components[0].status') != "null" ]; then
+                if [ $(curl --silent -H "Authorization: OAuth "${AUTHKEY}"" -X GET "https://api.statuspage.io/v1/pages/$PAGEID/incidents/unresolved" | jq -r '.[0].incident_updates[0].affected_components[0].new_status') != "null" ]; then
                     # Incident already created
                     echo "Incident already present for ${SERVICE_ARRAY[$i]}. No action required."
                     echo "Domain: ${DOMAIN_ARRAY[$i]} | HTTP status: ${http_status_codes[$i]} | unavailable"
@@ -168,89 +180,88 @@ if [[ statuspage_q -eq 1 ]]; then
                 else
                     # Incident not created yet
                     echo "Incident not present for ${SERVICE_ARRAY[$i]}. Will be created."
-                    incidentID=$(curl --silent -H "Authorization: OAuth "${AUTHKEY}"" -X GET https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents/unresolved | jq -r '.[0].id')
                     httpCodeCurrent="http${http_status_codes[i]}" # Define current http status code query
                     if [ -z "${http_status_codes[$i]}" ]; then
                         # Empty (000)
                         echo "Service: ${SERVICE_ARRAY[$i]} | Domain: ${DOMAIN_ARRAY[$i]} | HTTP status: ${http_status_codes[$i]}"
-                        if [[ statuspage_q -eq 1 ]] && [ "$statuspage_already_sent" = "false" ]; then
-                            statuspage_already_sent="true" # Update variable
+                        if [[ statuspage_q -eq 1 ]] && [[ "$statuspage_already_sent" -eq 0 ]]; then
+                            statuspage_already_sent=1 # Update variable
                             sed -i "5s/0/1/" "$storage_file_path" # Update txt file
-                            curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X POST -d "incident[name]=unknown fault" -d "incident[status]=investigating" -d "incident[impact_override]=critical" -d "incident[body]=page not available - automatically generated message" -d "incident[components["${COMPONENTID_ARRAY[$i]}"]]=major_outage" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents
+                            curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X POST -d "incident[name]=unknown fault" -d "incident[status]=investigating" -d "incident[impact_override]=critical" -d "incident[body]=page not available - automatically generated message" -d "incident[components["${COMPONENTID_ARRAY[$i]}"]]=major_outage" -d "incident[component_ids]="${COMPONENTID_ARRAY[$i]}"" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents
                         fi
-                        if [[ discord_q -eq 1 ]] && [ "$discord_already_sent" = "false" ]; then
-                            discord_already_sent="true" # Update variable (discord)
+                        if [[ discord_q -eq 1 ]] && [[ "$discord_already_sent" -eq 0 ]]; then
+                            discord_already_sent=1 # Update variable (discord)
                             sed -i "8s/0/1/" "$storage_file_path" # Update txt file (discord)
                         sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_ERROR_TITLE" --description "Service(s) affected: "${SERVICE_ARRAY[$i]}"" --color "$DISCORD_ERROR_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_ERROR_THUMBNAIL" --field "CURRENT STATUS:;"${http_status_codes[$i]}" "${!httpCodeCurrent}"" --footer "automatically generated message" --timestamp
                         fi
-                        if [[ email_q -eq 1 ]] && [ "$email_already_sent" = "false" ]; then
-                            email_already_sent="true" # Update variable (email)
+                        if [[ email_q -eq 1 ]] && [[ "$email_already_sent" -eq 0 ]]; then
+                            email_already_sent=0 # Update variable (email)
                             sed -i "11s/0/1/" "$storage_file_path" # Update txt file (email)
                             for recipient in "${SMTPTO[@]}"; do
-                                python3 "$mailscript_path" "$SMTPFROM" "$recipients_string" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
+                                python3 "$mailscript_path_fault" "$SMTPFROM" "$recipients_string" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
                             done
                         fi
                         echo
                     elif [ "${http_status_codes[$i]}" -ge 400 ] && [ "${http_status_codes[$i]}" -le 451 ] && [[ ! " ${excluded_statuscodes_4xx[@]} " =~ " ${http_status_codes[$i]} " ]]; then
                         # 4xx
                         echo "Service: ${SERVICE_ARRAY[$i]} | Domain: ${DOMAIN_ARRAY[$i]} | HTTP status: ${http_status_codes[$i]}"
-                        if [[ statuspage_q -eq 1 ]] && [ "$statuspage_already_sent" = "false" ]; then
-                            statuspage_already_sent="true" # Update variable (statuspage)
+                        if [[ statuspage_q -eq 1 ]] && [[ "$statuspage_already_sent" -eq 0 ]]; then
+                            statuspage_already_sent=1 # Update variable (statuspage)
                             sed -i "5s/0/1/" "$storage_file_path" # Update txt file (statuspage)
-                            curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X POST -d "incident[name]=unknown fault" -d "incident[status]=investigating" -d "incident[impact_override]=minor" -d "incident[body]="${http_status_codes[$i]}" "${!httpCodeCurrent}" error - automatically generated message" -d "incident[components["${COMPONENTID_ARRAY[$i]}"]]=partial_outage" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents
+                            curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X POST -d "incident[name]=unknown fault" -d "incident[status]=investigating" -d "incident[impact_override]=minor" -d "incident[body]="${http_status_codes[$i]}" "${!httpCodeCurrent}" error - automatically generated message" -d "incident[components["${COMPONENTID_ARRAY[$i]}"]]=partial_outage" -d "incident[component_ids]="${COMPONENTID_ARRAY[$i]}"" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents
                         fi
-                        if [[ discord_q -eq 1 ]] && [ "$discord_already_sent" = "false" ]; then
-                            discord_already_sent="true" # Update variable (discord)
+                        if [[ discord_q -eq 1 ]] && [[ "$discord_already_sent" -eq 0 ]]; then
+                            discord_already_sent=1 # Update variable (discord)
                             sed -i "8s/0/1/" "$storage_file_path" # Update txt file (discord)
                             sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_ERROR_TITLE" --description "Service(s) affected: "${SERVICE_ARRAY[$i]}"" --color "$DISCORD_FAILURE_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_FAILURE_THUMBNAIL" --field "CURRENT STATUS:;"${http_status_codes[$i]}" "${!httpCodeCurrent}"" --footer "automatically generated message" --timestamp
                         fi
-                        if [[ email_q -eq 1 ]] && [ "$email_already_sent" = "false" ]; then
-                            email_already_sent="true" # Update variable (email)
+                        if [[ email_q -eq 1 ]] && [[ "$email_already_sent" -eq 0 ]]; then
+                            email_already_sent=1 # Update variable (email)
                             sed -i "11s/0/1/" "$storage_file_path" # Update txt file (email)
                             for recipient in "${SMTPTO[@]}"; do
-                                python3 "$mailscript_path" "$SMTPFROM" "$recipients_string" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
+                                python3 "$mailscript_path_fault" "$SMTPFROM" "$recipients_string" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
                             done
                         fi
                         echo
                     elif [ "${http_status_codes[$i]}" -ge 500 ] && [ "${http_status_codes[$i]}" -le 511 ] && [[ ! " ${excluded_statuscodes_5xx[@]} " =~ " ${http_status_codes[$i]} " ]]; then
                         # 5xx
                         echo "Service: ${SERVICE_ARRAY[$i]} | Domain: ${DOMAIN_ARRAY[$i]} | HTTP status: ${http_status_codes[$i]}"
-                        if [[ statuspage_q -eq 1 ]] && [ "$statuspage_already_sent" = "false" ]; then
-                            statuspage_already_sent="true" # Update variable (statuspage)
+                        if [[ statuspage_q -eq 1 ]] && [[ "$statuspage_already_sent" -eq 0 ]]; then
+                            statuspage_already_sent=1 # Update variable (statuspage)
                             sed -i "5s/0/1/" "$storage_file_path" # Update txt file (statuspage)
-                            curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X POST -d "incident[name]=unknown fault" -d "incident[status]=investigating" -d "incident[impact_override]=minor" -d "incident[body]="${http_status_codes[$i]}" "${!httpCodeCurrent}" error - automatically generated message" -d "incident[components["${COMPONENTID_ARRAY[$i]}"]]=partial_outage" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents
+                            curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X POST -d "incident[name]=unknown fault" -d "incident[status]=investigating" -d "incident[impact_override]=minor" -d "incident[body]="${http_status_codes[$i]}" "${!httpCodeCurrent}" error - automatically generated message" -d "incident[components["${COMPONENTID_ARRAY[$i]}"]]=partial_outage" -d "incident[component_ids]="${COMPONENTID_ARRAY[$i]}"" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents
                         fi
-                        if [[ discord_q -eq 1 ]] && [ "$discord_already_sent" = "false" ]; then
-                            discord_already_sent="true" # Update variable (discord)
+                        if [[ discord_q -eq 1 ]] && [[ "$discord_already_sent" -eq 0 ]]; then
+                            discord_already_sent=1 # Update variable (discord)
                             sed -i "8s/0/1/" "$storage_file_path" # Update txt file (discord)
                             sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_ERROR_TITLE" --description "Service(s) affected: "${SERVICE_ARRAY[$i]}"" --color "$DISCORD_FAILURE_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_FAILURE_THUMBNAIL" --field "CURRENT STATUS:;"${http_status_codes[$i]}" "${!httpCodeCurrent}"" --footer "automatically generated message" --timestamp
                         fi
-                        if [[ email_q -eq 1 ]] && [ "$email_already_sent" = "false" ]; then
-                            email_already_sent="true" # Update variable (email)
+                        if [[ email_q -eq 1 ]] && [[ "$email_already_sent" -eq 0 ]]; then
+                            email_already_sent=1 # Update variable (email)
                             sed -i "11s/0/1/" "$storage_file_path" # Update txt file (email)
                             for recipient in "${SMTPTO[@]}"; do
-                                python3 "$mailscript_path" "$SMTPFROM" "$recipients_string" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
+                                python3 "$mailscript_path_fault" "$SMTPFROM" "$recipients_string" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
                             done
                         fi
                         echo
                     else
                         # non-official code
                         echo "Service: ${SERVICE_ARRAY[$i]} | Domain: ${DOMAIN_ARRAY[$i]} | HTTP status: ${http_status_codes[$i]}"
-                        if [[ statuspage_q -eq 1 ]] && [ "$statuspage_already_sent" = "false" ]; then
-                            statuspage_already_sent="true" # Update variable (statuspage)
+                        if [[ statuspage_q -eq 1 ]] && [[ "$statuspage_already_sent" -eq 0 ]]; then
+                            statuspage_already_sent=1 # Update variable (statuspage)
                             sed -i "5s/0/1/" "$storage_file_path" # Update txt file (statuspage)
-                            curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X POST -d "incident[name]=unknown fault" -d "incident[status]=investigating" -d "incident[impact_override]=minor" -d "incident[body]="${http_status_codes[$i]}" - non-official code - automatically generated message" -d "incident[components["${COMPONENTID_ARRAY[$i]}"]]=partial_outage" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents
+                            curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X POST -d "incident[name]=unknown fault" -d "incident[status]=investigating" -d "incident[impact_override]=minor" -d "incident[body]="${http_status_codes[$i]}" - non-official code - automatically generated message" -d "incident[components["${COMPONENTID_ARRAY[$i]}"]]=partial_outage" -d "incident[component_ids]="${COMPONENTID_ARRAY[$i]}"" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents
                         fi
-                        if [[ discord_q -eq 1 ]] && [ "$discord_already_sent" = "false" ]; then
-                            discord_already_sent="true" # Update variable (discord)
+                        if [[ discord_q -eq 1 ]] && [[ "$discord_already_sent" -eq 0 ]]; then
+                            discord_already_sent=1 # Update variable (discord)
                             sed -i "8s/0/1/" "$storage_file_path" # Update txt file (discord)
                             sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_ERROR_TITLE" --description "Service(s) affected: "${SERVICE_ARRAY[$i]}"" --color "$DISCORD_FAILURE_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_FAILURE_THUMBNAIL" --field "CURRENT STATUS:;"${http_status_codes[$i]}" - non-official code" --footer "automatically generated message" --timestamp
                         fi
-                        if [[ email_q -eq 1 ]] && [ "$email_already_sent" = "false" ]; then
-                            email_already_sent="true" # Update variable (email)
+                        if [[ email_q -eq 1 ]] && [[ "$email_already_sent" -eq 0 ]]; then
+                            email_already_sent=1 # Update variable (email)
                             sed -i "11s/0/1/" "$storage_file_path" # Update txt file (email)
                             for recipient in "${SMTPTO[@]}"; do
-                                python3 "$mailscript_path" "$SMTPFROM" "$recipients_string" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
+                                python3 "$mailscript_path_fault" "$SMTPFROM" "$recipients_string" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
                             done
                         fi
                         echo
@@ -261,31 +272,37 @@ if [[ statuspage_q -eq 1 ]]; then
             # http status is 200
             echo "Service: ${SERVICE_ARRAY[$i]} | Domain: ${DOMAIN_ARRAY[$i]} | HTTP status: ${http_status_codes[$i]} | available"
             if [[ " ${http_status_codes[@]} " =~ " 200 " ]]; then # Check if any service has a different status than 200
-                if [ $(curl --silent -H "Authorization: OAuth "${AUTHKEY}"" -X GET https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents/unresolved | jq -r '.[0].id') != "null" ]; then
-                    echo "Close incident..."
-                    echo
-                    # Close incident as there is no longer a problem
-                    if [[ statuspage_q -eq 1 ]] && [ "$statuspage_already_sent" = "true" ]; then
-                        statuspage_already_sent="false" # Update variable (statuspage)
-                        sed -i "5s/1/0/" "$storage_file_path" # Update txt file (statuspage)
-                        curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X PATCH -d "incident[status]=resolved" -d "incident[components["${COMPONENTID_ARRAY}"]]=operational" -d "incident[body]=page now available - automatically generated message" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents/"$incidentID"
-                    fi
-                    if [[ discord_q -eq 1 ]] && [ "$discord_already_sent" = "true" ]; then
-                        discord_already_sent="false" # Update variable (discord)
-                        sed -i "8s/1/0/" "$storage_file_path" # Update txt file (discord)
-                        sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_OKAY_TITLE" --description "Service(s) affected: "${SERVICE_ARRAY[$i]}"" --color "$DISCORD_OKAY_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_OKAY_THUMBNAIL" --field "CURRENT STATUS:;"${http_status[$i]}" - available" --footer "automatically generated message" --timestamp
-                    fi
-                    if [[ email_q -eq 1 ]] && [ "$email_already_sent" = "true" ]; then
-                        email_already_sent="false" # Update variable (email)
-                        sed -i "11s/1/0/" "$storage_file_path" # Update txt file (email)
-                        for recipient in "${SMTPTO[@]}"; do
-                            python3 "$mailscript_path" "$SMTPFROM" "$recipients_string" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
-                        done
+                if [[ "$statuspage_already_sent" -eq 1 ]] || [[ "$discord_already_sent" -eq 1 ]] || [[ "$email_already_sent" -eq 1 ]]; then
+                    incidentID=$(curl --silent -H "Authorization: OAuth "${AUTHKEY}"" -X GET https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents/unresolved | jq -r '.[0].id' 2>/dev/null) # 2>/dev/null -> Block irrelevant error message
+                    componentID=$(curl --silent -H "Authorization: OAuth ${AUTHKEY}" -X GET https://api.statuspage.io/v1/pages/${PAGEID}/incidents/${incidentID} | jq -r '.components[].id' 2>/dev/null) # 2>/dev/null -> Block irrelevant error message
+                    if [[ " ${COMPONENTID_ARRAY_LAST_AFFECTED[@]} " =~ " $componentID " ]] && [[ " ${COMPONENTID_ARRAY_LAST_AFFECTED[@]} " =~ " ${COMPONENTID_ARRAY[$i]} " ]]; then
+                        echo "Close incident..."
+                        sed -i "14c\\nothing" "$storage_file_path" # Save "nothing"-message to txt-file
+                        # Close incident as there is no longer a problem
+                        if [[ statuspage_q -eq 1 ]] && [[ "$statuspage_already_sent" -eq 1 ]]; then
+                            statuspage_already_sent=0 # Update variable (statuspage)
+                            sed -i "5s/1/0/" "$storage_file_path" # Update txt file (statuspage)
+                            curl -o /dev/null --silent -H "Authorization: OAuth "${AUTHKEY}"" -X PATCH -d "incident[status]=resolved" -d "incident[components["${COMPONENTID_ARRAY[$i]}"]]=operational" -d "incident[body]=page now available - automatically generated message" https://api.statuspage.io/v1/pages/"${PAGEID}"/incidents/"$incidentID"
+                        fi
+                        if [[ discord_q -eq 1 ]] && [[ "$discord_already_sent" -eq 1 ]]; then
+                            discord_already_sent=0 # Update variable (discord)
+                            sed -i "8s/1/0/" "$storage_file_path" # Update txt file (discord)
+                            sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_OKAY_TITLE" --description "Service(s) affected: "${SERVICE_ARRAY[$i]}"" --color "$DISCORD_OKAY_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_OKAY_THUMBNAIL" --field "CURRENT STATUS:;"${http_status_codes[$i]}" - available" --footer "automatically generated message" --timestamp
+                        fi
+                        if [[ email_q -eq 1 ]] && [[ "$email_already_sent" -eq 1 ]]; then
+                            email_already_sent=0 # Update variable (email)
+                            sed -i "11s/1/0/" "$storage_file_path" # Update txt file (email)
+                            for recipient in "${SMTPTO[@]}"; do
+                                python3 "$mailscript_path_okay" "$SMTPFROM" "$recipients_string" "$SMTPSERVER" "$SMTPPORT" "$SMTPUSER" "$SMTPPASS"
+                            done
+                        fi
+                    else
+                        echo "No incident to close."
                     fi
                 else
-                    echo "No incident to close."
-                    echo
+                    echo "No incident exist."
                 fi
+                echo
             fi
         fi
     done
