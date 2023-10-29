@@ -57,17 +57,17 @@ DISCORD_OKAY_TITLE="ALL NORMAL" #Operational
 DISCORD_FAILURE_TITLE="PARTIAL OUTAGE REPORTED!" #Partial Outage
 DISCORD_DEGRADED_TITLE="DEGRADED PERFORMANCE REPORTED!" #Degraded Performance
 DISCORD_MAINTENANCE_TITLE="MAINTENANCE REPORTED!" #Maintenance
-DISCORD_ACTION_TITLE="HUMAN ACTION REQUIRED!" #Action required
+#DISCORD_ACTION_TITLE="HUMAN ACTION REQUIRED!" #Action required
 DISCORD_ERROR_COLOR="0xf41100" #Major Outage
 DISCORD_FAILURE_COLOR="0xffff00" #Partial Outage
 DISCORD_OKAY_COLOR="0x13de10" #Operational
 DISCORD_DEGRADED_COLOR="0xffff00" #Degraded Performance
 DISCORD_MAINTENANCE_COLOR="0x03b2f8" #Maintenance
-DISCORD_ACTION_COLOR="0xffff00" #Action
+#DISCORD_ACTION_COLOR="0xffff00" #Action
 DISCORD_AUTHOR="your author name" #Author
 DISCORD_AUTHOR_URL="url of your statuspage" #Author url
 DISCORD_AUTHOR_ICON="url of your author picture" #Author url
-DISCORD_ACTION_THUMBNAIL="url of your action picture" #Action Required icon
+#DISCORD_ACTION_THUMBNAIL="url of your action picture" #Action Required icon
 DISCORD_ERROR_THUMBNAIL="url of your major outage picture" #Major Outage autor icon
 DISCORD_OKAY_THUMBNAIL="url of your operational picture" #Operational autor icon
 DISCORD_MAINTENANCE_THUMBNAIL="url of your maintenance picture" #Maintenance autor icon
@@ -219,7 +219,7 @@ do
                # 200
                # Idea: In the future you may be able to disarm via a Discord bot...
                echo "Human action required: All created incidents must be manually defused."
-               if [[ $discord_q -eq 1 ]]; then sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_ACTION_TITLE" --description "All created incidents must be manually defused." --color "$DISCORD_ACTION_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_ACTION_THUMBNAIL" --footer "automatically generated message" --timestamp; fi
+               #if [[ $discord_q -eq 1 ]]; then sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_ACTION_TITLE" --description "All created incidents must be manually defused." --color "$DISCORD_ACTION_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_ACTION_THUMBNAIL" --footer "automatically generated message" --timestamp; fi
                #if [[ $statuspage_q -eq 1 ]]; then  ; fi
                #if [[ $email_q -eq 1 ]]; then  ; fi
                ;;
