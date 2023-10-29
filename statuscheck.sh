@@ -219,7 +219,7 @@ do
                # 200
                # Idea: In the future you may be able to disarm via a Discord bot...
                echo "Human action required: All created incidents must be manually defused."
-               if [[ $discord_q -eq 1 ]]; then sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_ACTION_TITLE" --description "All created incidents must be manually defused." --color "$DISCORD_ACTION_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_ACTION_THUMBNAIL" --footer "automatically generated message" --timestamp; fi; fi
+               if [[ $discord_q -eq 1 ]]; then sudo bash "$DISCORD_SH_LOCATION" --webhook-url="$WEBHOOK" --username "$DISCORD_USERNAME" --avatar "$DISCORD_AVATAR_URL" --title "$DISCORD_ACTION_TITLE" --description "All created incidents must be manually defused." --color "$DISCORD_ACTION_COLOR" --author "$DISCORD_AUTHOR" --author-url "$DISCORD_AUTHOR_URL" --author-icon "$DISCORD_AUTHOR_ICON" --thumbnail "$DISCORD_ACTION_THUMBNAIL" --footer "automatically generated message" --timestamp; fi
                #if [[ $statuspage_q -eq 1 ]]; then  ; fi
                #if [[ $email_q -eq 1 ]]; then  ; fi
                ;;
