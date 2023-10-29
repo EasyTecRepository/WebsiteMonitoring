@@ -136,9 +136,6 @@ http508="LOOP DETECTED" #508
 http510="NOT EXTENDED" #510
 http511="NETWORK AUTHENTICATION REQUEST" #511
 
-excluded_statuscodes_4xx=(419 420 427 430 432 433 434 435 436 437 438 439 440 441 442 443 444 445 446 447 448 449 450) # Array of excluded 4xx statuscodes
-excluded_statuscodes_5xx=(509) # Array of excluded 5xx statuscodes
-
 ### FROM HERE PLEASE DO NOT MAKE ANY CHANGES ###
 
 # COLORS
