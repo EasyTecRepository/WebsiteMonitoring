@@ -67,7 +67,7 @@ DISCORD_ACTION_COLOR="0xffff00" #Action
 DISCORD_AUTHOR="your author name" #Author
 DISCORD_AUTHOR_URL="url of your statuspage" #Author url
 DISCORD_AUTHOR_ICON="url of your author picture" #Author url
-DISCORD_ACTION_THUMBNAIL="https://img.icons8.com/?size=256&id=30881&format=png" #Action Required icon
+DISCORD_ACTION_THUMBNAIL="url of your action picture" #Action Required icon
 DISCORD_ERROR_THUMBNAIL="url of your major outage picture" #Major Outage autor icon
 DISCORD_OKAY_THUMBNAIL="url of your operational picture" #Operational autor icon
 DISCORD_MAINTENANCE_THUMBNAIL="url of your maintenance picture" #Maintenance autor icon
