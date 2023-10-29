@@ -1,5 +1,5 @@
 # Website Monitoring script 🖥️
-![](https://img.shields.io/badge/Status-In_Entwicklung-orange)
+![](https://img.shields.io/badge/Status-Finished-green)
 ![](https://img.shields.io/badge/Version-BETA-orange)
 
 This is an **easy way** to see the current status of your services, **no matter** where you are.
@@ -26,7 +26,7 @@ sudo apt install jq
 ## Get started
 Run the following command
 ```
-https://github.com/EasyTecRepository/StatuspageAutomation.git
+git clone https://github.com/EasyTecRepository/StatuspageAutomation.git
 ```
 
 Change to folder
@@ -38,15 +38,17 @@ Adjust all variables
 
 | General Variables            | Description                                                                          |
 | ---------------------------- | ------------------------------------------------------------------------------------ |
+|UNRAID_ENVIRONMENT            | Specifys which system you are using - This is important for the colored display      |
+|storage_file_path             | Specifies where your txt file is located (and what it is called)                     |
 |statuspage_q                  | Specifies whether you want to use the function of Statuspage or not                  |
 |discord_q                     | Specifies whether you want to use the function of Discord-Webhook or not             |
 |email_q                       | Specifies whether you want to use the function of E-Mail-Notification or not         |
+|DOMAIN_ARRAY                  | Here are all your website URL's                                                      |
 
 | Statuspage.io Variables      | Description                                                                          |
 | ---------------------------- | ------------------------------------------------------------------------------------ |
 |AUTHKEY                       | Specifies which authentication token to use for statuspage                           |
 |PAGEID                        | Specifies which pageid to use for statuspage                                         |
-|DOMAIN_ARRAY                  | Here are all your website URL's                                                      |
 |SERVICE_ARRAY                 | Here are all your website names (You can choose what you call them)                  |
 |COMPONENTID_ARRAY             | Specifies which ComponentID's on statuspage are affected                             |
 
