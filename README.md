@@ -132,5 +132,15 @@ Go to the very bottom of the open file and paste the following:
 */5 * * * * /example/path/script.sh
 ```
 (At ```/example/path/script.sh``` you have to enter the **_entire_** path! You can find out the whole path for example with the command ```pwd```)
-
 After the correct command is in the crontab, the file can be saved and exited with ```control+O``` & ```Enter``` and ```control+X``` (Mac). (Under Windows: ```CTRL+O``` & Enter and ```CTRL+X```)
+
+## Icons
+[Status](https://icons8.com/icon/108535/status) icon by [Icons8](https://icons8.com)
+
+[Maintenance](https://icons8.com/icon/40989/maintenance) icon by [Icons8](https://icons8.com)
+
+[Tick Box](https://icons8.com/icon/15427/tick-box) icon by [Icons8](https://icons8.com)
+
+[Mandatory](https://icons8.com/icon/30881/mandatory) icon by [Icons8](https://icons8.com)
+
+[Error](https://icons8.com/icon/8122/error) icon by [Icons8](https://icons8.com)
