@@ -137,6 +137,8 @@ http511="NETWORK AUTHENTICATION REQUEST" #511
 
 ### FROM HERE PLEASE DO NOT MAKE ANY CHANGES ###
 
+recipients_string="$(IFS=,; echo "${SMTPTO[*]}")" # Email address formatting
+
 # COLORS
 if [[ "$UNRAID_ENVIRONMENT" == "true" ]]; then
     # use Unraid
