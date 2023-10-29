@@ -84,7 +84,6 @@ SMTPPORT="587"
 SMTPUSER="mail@example.com"
 SMTPPASS="a1b2c3d4e5f6g7"
 mailscript_path_fault="/path/to/script/script.py" # E-mail for fault
-mailscript_path_okay="/path/to/script/script.py" # All clear email
 
 ## HTTP status code text ##
 # general
